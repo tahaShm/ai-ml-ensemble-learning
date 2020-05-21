@@ -5,6 +5,8 @@ import numpy as np
 import datetime
 from sklearn import preprocessing
 from sklearn.preprocessing import StandardScaler
+from sklearn.feature_selection import mutual_info_classif
+import matplotlib.pyplot as plt
 
 
 def preprocessDate(df)  :
@@ -42,33 +44,50 @@ def scaleData(data):
     
     return data                            
 
-def getData(dataFile, encodingType) : 
+def getProcessedData(dataFile, encodingType) : 
     data = []
+    targetData = []
     col_list = ["Customer ID", "Total Quantity", "Total Price", "Country", "Date", "Is Back", "Purchase Count"]
     df = pd.read_csv(dataFile, usecols=col_list)
     df['Date']= pd.to_datetime(df['Date'])
     
     if (encodingType == "oneHot") :
         df = pd.concat([df,pd.get_dummies(df['Country'])],axis=1).drop(['Country'],axis=1)
+
+
     
     df = preprocessDate(df)
     
     for index, dfRow in df.iterrows() : 
+        if (dfRow['Is Back'] == 'Yes') : 
+            dfRow['Is Back'] = 1
+        else:
+            dfRow['Is Back'] = 0
+            
+        targetData.append(dfRow['Is Back'])    
+        del dfRow['Is Back']
         data.append(dfRow)
-    
+        
     if (encodingType == "labeled") :
         preprocessLabeledCategorical(data, df)
         
     data = scaleData(data)
     
-    return data
+    labels = list(df)
+    labels.remove('Is Back')
+    return [data, targetData, labels]
 
-    
-data = getData("data.csv", "oneHot")
+[data, targetData, labels] = getProcessedData("data.csv", "labeled") #second parameter: "labeled" or "oneHot"
 
-print(data[0])
-print(data[1])
-print(data[2])
-# print(data[3])
-# print(data[4])
-# print(data[5])
+informationGains = mutual_info_classif(data, targetData)
+
+def showInformationGains() :
+    plt.figure(figsize=(12, 6))
+    plt.plot(informationGains) 
+    plt.xticks(range(len(labels)), labels, rotation=90)
+    plt.xlabel('Features') 
+    plt.ylabel('Gain') 
+    plt.title('Information Gain') 
+
+    plt.show()
+showInformationGains()
