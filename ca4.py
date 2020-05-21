@@ -4,7 +4,7 @@ import math
 import numpy as np
 import datetime
 from sklearn import preprocessing
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import StandardScaler
 
 
 def preprocessDate(df)  :
@@ -27,6 +27,21 @@ def preprocessLabeledCategorical(data, df) :
     
     return data
 
+def scaleData(data):
+    scalableData = []
+    for row in data:
+        scalableData.append([row["Total Quantity"], row["Total Price"]])
+    
+    scaler = StandardScaler()
+    scaler.fit(scalableData)
+    transformedData = scaler.transform(scalableData)
+    
+    for i in range(len(data)) :
+        data[i]['Total Quantity'] = transformedData[i][0]
+        data[i]['Total Price'] = transformedData[i][1]
+    
+    return data                            
+
 def getData(dataFile, encodingType) : 
     data = []
     col_list = ["Customer ID", "Total Quantity", "Total Price", "Country", "Date", "Is Back", "Purchase Count"]
@@ -43,6 +58,8 @@ def getData(dataFile, encodingType) :
     
     if (encodingType == "labeled") :
         preprocessLabeledCategorical(data, df)
+        
+    data = scaleData(data)
     
     return data
 
@@ -52,6 +69,6 @@ data = getData("data.csv", "oneHot")
 print(data[0])
 print(data[1])
 print(data[2])
-print(data[3])
-print(data[4])
-print(data[5])
+# print(data[3])
+# print(data[4])
+# print(data[5])
