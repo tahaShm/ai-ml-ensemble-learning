@@ -16,60 +16,42 @@ def preprocessDate(df)  :
     del df['Date']
     return df
 
-def preprocessCategorical(data, encodingType, df) : 
-    # print(uniqueCountries)
-    # enc = OneHotEncoder(handle_unknown='ignore')
-    # X = [['Male'], ['Female'], ['Female']]
-    countries = df['Country'].tolist()
-    # print(countries) : 
-    if (encodingType == "labeled") : 
-        le = preprocessing.LabelEncoder()
-        le.fit(countries)
-        # print(list(le.classes_))
-        transformedCountries = le.transform(countries)
-        for i in range(len(data)) : 
-            data[i]['Country'] = transformedCountries[i]
-            
-    elif (encodingType == "oneHot") : 
-        enc = OneHotEncoder(handle_unknown='ignore')
-        for i in range(len(countries)) : 
-            countries[i] = [countries[i]]
-        enc.fit(countries)
-        # print(enc.categories_)
-
-        transformedCountries = enc.transform(countries).toarray()
-        for i in range(len(data)) : 
-            data[i][countries[i][0]] = transformedCountries[i]
-
-
-    # enc.inverse_transform([[0, 1, 1, 0, 0], [0, 0, 0, 1, 0]])
-
-
-    # print(enc.get_feature_names(['gender', 'group']))
+def preprocessLabeledCategorical(data, df) : 
+    countries = df['Country'].tolist() 
+    le = preprocessing.LabelEncoder()
+    le.fit(countries)
+    # print(list(le.classes_))
+    transformedCountries = le.transform(countries)
+    for i in range(len(data)) : 
+        data[i]['Country'] = transformedCountries[i]
+    
     return data
 
-def getData(dataFile) : 
+def getData(dataFile, encodingType) : 
     data = []
     col_list = ["Customer ID", "Total Quantity", "Total Price", "Country", "Date", "Is Back", "Purchase Count"]
     df = pd.read_csv(dataFile, usecols=col_list)
-    df['Date']= pd.to_datetime(df['Date']) 
+    df['Date']= pd.to_datetime(df['Date'])
+    
+    if (encodingType == "oneHot") :
+        df = pd.concat([df,pd.get_dummies(df['Country'])],axis=1).drop(['Country'],axis=1)
     
     df = preprocessDate(df)
     
     for index, dfRow in df.iterrows() : 
         data.append(dfRow)
     
-    preprocessCategorical(data, "oneHot", df)
-    # data = preprocessCategorical("labeled")
+    if (encodingType == "labeled") :
+        preprocessLabeledCategorical(data, df)
     
     return data
 
     
-data = getData("data.csv")
+data = getData("data.csv", "oneHot")
 
-# print(data[0])
-# print(data[1])
-# print(data[2])
-# print(data[3])
-# print(data[4])
-# print(data[5])
+print(data[0])
+print(data[1])
+print(data[2])
+print(data[3])
+print(data[4])
+print(data[5])
