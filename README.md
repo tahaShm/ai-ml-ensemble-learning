@@ -1,6 +1,6 @@
-# ai-simple-ml
+# ai-ml-ensemble-learning
 
-This is a simple machine learning project using sciKit_Learn including
+This is a machine learning project using sciKit_Learn including
 - information gain
 - knn
 - decision tree
